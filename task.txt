@@ -1,0 +1,568 @@
+https://www.linode.com/docs/databases/mongodb/create-a-mongodb-replica-set/
+Mongodb cluster Installation
+-----------------------------
+
+apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+apt-get update
+apt-get install mongodb-org -y 
+
+##################################################################################################################################################
+zookeper installation
+----------------------
+A.rpm installation.
+
+1.Install ZooKeeper packages
+	# apt-get install openjdk-8-jre-headless
+	# apt-get install zookeeper zookeeperd zkdump
+
+2. Configure ZooKeeper
+	a. Common Configuration
+		Edit the /etc/zookeeper/conf/zoo.cfg file to contain the following:
+			server.1=nsdb1:2888:3888
+			server.2=nsdb2:2888:3888
+			server.3=nsdb3:2888:3888
+			autopurge.snapRetainCount=10
+			autopurge.purgeInterval =12
+
+	b.Node-specific Configuration
+		(i). NSDB Node 1
+			Create the /var/lib/zookeeper/myid file and edit it to contain the host’s ID:
+			# echo 1 > /var/lib/zookeeper/myid
+
+		(i). NSDB Node 2
+			Create the /var/lib/zookeeper/myid file and edit it to contain the host’s ID:
+			# echo 2 > /var/lib/zookeeper/myid
+
+		(i). NSDB Node 3
+			Create the /var/lib/zookeeper/myid file and edit it to contain the host’s ID:
+			# echo 3 > /var/lib/zookeeper/myid
+
+3.Restart ZooKeeper
+	# service zookeeper restart
+
+4.Verify ZooKeeper Operation
+After installation of all nodes has been completed, verify that ZooKeeper is operating properly.
+
+$ echo ruok | nc 127.0.0.1 2181
+imok
+
+
+hostfiles:
+192.168.1.11 ansible_user=user ansible_ssh_pass=user ansible_become=yes hostname=server3.example.com host_suff=server3 host_ip=192.168.1.202
+192.168.1.200 ansible_user=user ansible_ssh_pass=user ansible_become=yes myid=1
+################################################################################################################
+https://doc.lucidworks.com/fusion-server/4.1/solr-reference-guide/7.4.0/setting-up-an-external-zookeeper-ensemble.html
+###################################################################################################################
+zookeper installation
+----------------------
+B.tar installation.
+
+1.Creating a zookeeper user
+#mkdir /home/zookeeper
+#useradd -d /home/zookeeper zookeeper
+#chown -R zookeeper:zookeeper /home/zookeeper
+
+2. install the java
+	#apt-get install openjdk-8-jre-headless -y
+
+3. Creating the systemd service for zookeeper
+	#vi /etc/systemd/system/zookeeper.service
+
+[Unit]
+Description=Zookeeper Daemon
+Wants=syslog.target
+Documentation=man:systemd-sysv-generator(8)
+Requires=network.target
+After=network.target
+
+[Service]
+Type=forking
+User=zookeeper
+Group=zookeeper
+ExecStart=/home/zookeeper/zookeeper/bin/zkServer.sh start /home/zookeeper/zookeeper/conf/zoo.cfg
+ExecStop=/home/zookeeper/zookeeper/bin/zkServer.sh stop /home/zookeeper/zookeeper/conf/zoo.cfg
+ExecReload=/opt/zookeeper/bin/zkServer.sh restart /opt/zookeeper/conf/zoo.cfg
+Restart=no
+TimeoutSec=5min
+IgnoreSIGPIPE=no
+KillMode=process
+GuessMainPID=no
+RemainAfterExit=yes
+WorkingDirectory=/home/zookeeper/zookeeper
+TimeoutSec=30
+Restart=on-failure
+
+[Install]
+WantedBy=multi-user.target
+
+
+
+4. Configuring zookeeper as a zookeeper user
+	#su - zookeeper
+	#wget http://mirrors.estointernet.in/apache/zookeeper/zookeeper-3.4.10/zookeeper-3.4.10.tar.gz -O /home/zookeeper/zookeeper.tar.gz
+	#tar -xf zookeeper.tar.gz -C /home/zookeeper/
+ 	#mv zookeeper-* zookeeper
+ 	#mkdir /home/zookeeper/data
+ 	#mkdir /home/zookeeper/log
+ 	#vi /home/zookeeper/zookeeper/conf/zoo.cfg
+tickTime=2000
+initLimit=10
+syncLimit=5
+dataDir=/home/zookeeper/data
+clientPort=2181
+server.1=server1.example.com:2888:3888
+server.2=server2.example.com:2888:3888
+server.3=server3.example.com:2888:3888
+autopurge.snapRetainCount=10
+autopurge.purgeInterval =12
+
+ 	#vi /home/zookeeper/zookeeper/conf/zookeeper-env.sh
+ZOO_LOG_DIR="/home/zookeeper/log"
+ZOO_LOG4J_PROP="INFO,ROLLINGFILE"
+SERVER_JVMFLAGS="-Xms2048m -Xmx2048m -verbose:gc -XX:+PrintHeapAtGC -XX:+PrintGCDetails -XX:+PrintGCDateStamps -XX:+PrintGCTimeStamps -XX:+PrintTenuringDistribution -XX:+PrintGCApplicationStoppedTime -Xloggc:$ZOO_LOG_DIR/zookeeper_gc.log -XX:+UseGCLogFileRotation -XX:NumberOfGCLogFiles=9 -XX:GCLogFileSize=20M"
+
+
+	server1:
+		#echo "1" > /home/zookeeper/data/myid
+
+	server2:
+		#echo "2" > /home/zookeeper/data/myid
+
+	server3:
+		#echo "3" > /home/zookeeper/data/myid
+
+
+	#ln /home/zookeeper/data/myid /home/zookeeper/zookeeper/conf/myid
+5. Start the service
+	#systemctl start zookeeper
+
+
+
+
+
+
+
+
+
+========================================================================================================================
+DNS proxy:
+https://github.com/tigerlyb/DNS-Proxy-Server-in-Python
+https://github.com/breakwa11/dnsproxy/blob/master/test.py
+https://github.com/tigerlyb/DNS-Proxy-Server-in-Python/blob/master/DNSProxyServer.py
+===============================================================================================
+
+ssl.wrap_socket(csock, server_side=True, certfile="/root/ssl/MyCertificate.crt", keyfile="/root/ssl/MyCertificate.crt", ssl_version=ssl.PROTOCOL_TLSv1_2)
+
+
+=================================================================================================
+
+
+docker file
+docker run -d --name=bind --dns=127.0.0.1 \
+  --publish=172.17.0.21:53:53/udp --publish=172.17.42.1:10000:10000 \
+  --volume=/root/bind:/data \
+  --env='ROOT_PASSWORD=root' \
+  sameersbn/bind:latest
+
+
+docker file
+docker run -d --name=bind --dns=127.0.0.1 \
+  --publish=192.168.1.100:53:53/udp --publish=172.17.42.1:10000:10000 \
+  --volume=/root/bind:/data \
+  --env='ROOT_PASSWORD=root' \
+  sameersbn/bind:latest
+
+
+docker run -i --rm\
+    -p 53:53/tcp --rm \
+    -p 53:53/udp  --name=DNS\
+    -e WILDCARD_DNS='example.com=192.168.0.1' \
+    -t cytopia/bind \
+
+
+
+======================================================================
+docker run --rm -p 6543:6543/tcp  -p 6543:6543/udp -e DNSIP="192.168.1.100"  -v /ssl:/ssl -t vikashoo7/dns-proxy
+
+Replace this with the your DNS server IP
+
+Cost
+speed
+Managenent
+==========================================================================
+
+docker pull vikashoo7/dns-proxy
+
+
+--tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key.pem   -H=0.0.0.0:2376
+
+
+
+RUN set -x \ && apt-get update \ && apt-get install --no-install-recommends --no-install-suggests -y \ bind9 \ dnsutils \ iputils-ping \ && apt-get purge -y --auto-remove -o APT::AutoRemove::RecommendsImportant=false $fetchDeps \ && rm -r /var/lib/apt/lists/* \ && mkdir /var/log/named \ && chown bind:bind /var/log/named \ && chmod 0755 /var/log/named
+
+
+
+docker run --name bind -it --rm \
+  --publish 53:53/tcp --publish 53:53/udp --publish 10000:10000/tcp \
+  --volume /srv/docker/bind:/data \
+  sameersbn/bind:9.11.3-20180713 -h \
+--tlsverify --tlscacert=ca.pem --tlscert=server-cert.pem --tlskey=server-key.pem   -H=0.0.0.0:2376
+
+
+dig -p 6760 @192.168.1.100 www.uga.com
+
+
+    import socket
+    sock = socket.socket(socket.AF_INET, socket.SOCK_STREAM)
+    sock.connect(('Example Domain', 5443))
+    ssl_sock = socket.ssl(sock)
+    ssl_sock.write('Hello\n')
+    sock.close()	
+
+
+import ssl
+
+s = ssl.wrap_socket(s, keyfile=None, certfile=None, server_side=False, cert_reqs=ssl.CERT_NONE, ssl_version=ssl.PROTOCOL_SSLv23)
+s.sendall(ssl_sock)
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+================================================================================================================================
+https://docs.midonet.org/docs/latest-en/quick-start-guide/ubuntu-1604_mitaka/content/_zookeeper_installation.html
+
+systemd
+https://stackoverflow.com/questions/48195340/systemd-with-multiple-execstart
+
+/bin/nc -l -p 21
+
+/etc/systemd/system/ncat@.service
+
+====================================================================================
+counter increment
+https://docs.docker.com/get-started/part2/#recap-and-cheat-sheet-optional
+
+https://hackernoon.com/create-a-private-local-docker-registry-5c79ce912620
+https://gist.github.com/kizbitz/26e2a9b6f3cac8240774
+
+http://serverascode.com/2017/06/05/docker-private-registry-with-ssl.html
+https://docs.docker.com/registry/insecure/#use-self-signed-certificates
+https://forums.docker.com/t/private-docker-registry-with-self-signed-certificate/9522
+https://docs.docker.com/compose/gettingstarted/#prerequisites
+
+
+
+
+Restart=on-failure
+
+
+  return 'Hello World! I have been seen {} times {}.\n'.format(count, local)
+
+
+sshd solution
+---------------------
+https://stackoverflow.com/questions/7286929/paramiko-incompatible-ssh-peer-no-acceptable-kex-algorithm#32691055
+
+===============================================================================================================
+mongodbinstallation
+
+https://medium.com/@ratulbasak93/mongodb-relication-in-ubuntu-16-04-acd5baf744a3
+
+more information about the DB
+---------------------------------
+https://eladnava.com/deploy-a-highly-available-mongodb-replica-set-on-aws/
+https://dzone.com/articles/6-easy-steps-configure-mongodb
+
+
+https://github.com/lucj/ansible-mongo-replica-set/tree/master/roles
+https://github.com/laggyluke/ansible-role-mongodb/tree/master/tasks
+==============================================================================================================
+
+# use admin
+# db.auth("{{ hostvars[inventory_hostname]['db_cluster_admin_username']  }}", "{{ hostvars[inventory_hostname]['db_cluster_admin_password']  }}");
+
+rs.initiate({_id: "rs0", members: [{_id: 0, host: mongodb-replica.example.com:27017}]});
+
+
+[primary]
+PRIMARY_IP
+
+[secondary]
+SECONDARY_1_IP
+SECONDARY_2_IP
+
+rs.initiate({_id: "rs0", members: [{_id: 0, host: "{{ groups['mongodb'][0] }}:27017"}]});
+rs.add("{{ groups['secondary'][0] }}:27017");
+rs.add("{{ groups['secondary'][1] }}:27017");
+
+rs.addArb("{{ groups['secondary'][2] }}")
+
+mongo rs.initiate({_id: "rs0", members: [{_id: 0, host: mongodb-replica.example.com:27017}]});
+
+mongo rs.initiate({_id: "rs0", members: [{_id: 0, host: mongodb-replica.example.com:27017}]});
+
+
+
+mongo rs.initiate({_id: 'rs0', members: [{ _id: 0, host: 'mongodb-replica.example.com'}]})
+
+
+ mongo --ssl --sslAllowInvalidCertificates < /tmp/initRS.js
+
+
+rs.initiate({_id: 'rs0', members: [{ _id: 0, host: 'mongodb-replica.example.com:27017'}]})
+
+
+rs.initiate({_id:"yourReplSetName", members: [{"_id":1, "host":"ongodb-replica.example.com"}]})
+rs.add("mongodb-replica.example.com")
+
+
+=====================================================================================================
+
+config = {
+    _id : "your_replica_set_name",
+     members : [
+         {_id : 0, host : "mongodb-replica.example.com:27017"},
+         {_id : 1, host : "yourIpAddress:port2"},
+         {_id : 2, host : "mongodb-ar.example.com:27017", arbiterOnly: true},
+     ]
+}
+
+
+config = {
+    _id : "rs0",
+     members : [
+         {_id : 0, host : "mongodb-replica.example.com:27017"},
+         {_id : 2, host : "mongodb-ar.example.com:27017", arbiterOnly: true},
+     ]
+}
+=====================================Working++++++++++++++++++++++++++++++=====
+rs.add("mongodb-replica.example.com:27017")
+rs.addArb("mongodb-ar.example.com")
+
+
+rs.initiate({_id: 'rs0', members: [{ _id: 0, host: 'mongodb.example.com:27017'}]})
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+rs.initiate(config)
+===========================================================================================================
+
+ mkdir  /root/.ssh/
+   60  chmod 700 /root/.ssh/
+   61  sudo vi /root/.ssh/authorized_keys
+   62  apt-get install pip
+   63  apt-get install  python
+   64  ll
+   65  apt-get update
+   66  rm -r t
+   67  apt-get install aptitude
+
+
+mongo db backup
+-----------------------
+https://pranavprakash.net/2017/02/04/automate-mongodb-backups-using-cron-and-shell-script/
+&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&&
+Steps:
+---------
+##Adding the GPG keys
+#apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv EA312927
+
+#echo "deb http://repo.mongodb.org/apt/ubuntu xenial/mongodb-org/3.2 multiverse" | sudo tee /etc/apt/sources.list.d/mongodb-org-3.2.list
+
+#apt-get update
+
+#apt-get install -y mongodb-org
+
+#systemctl start mongod
+
+##Copy the key and store on the each server
+#mkdir /mongodb/mongo-keyfile
+
+
+#Create an Admin user. Run the below command in the mongodb shell
+#mongodb
+
+use admin
+db.createUser(
+        {user: "admin",
+        pwd: "admin",
+        roles:[{role: "root",
+        db: "admin"}]})
+
+
+
+#############Repilication setup###################
+
+#vi /etc/mongod.conf
+net:
+  port: 27017
+  #bindIp: 127.0.0.1
+
+replication:
+  replSetName: rs0
+
+security:
+  keyFile: /mongodb/mongo-keyfile
+
+
+
+#systemctl restart mongod 
+
+#vi /tmp/mon
+rs.initiate({_id: 'rs0', members: [{ _id: 0, host: 'mongodb.example.com:27017'}]})
+
+#mongo
+rs.initiate({_id: 'rs0', members: [{ _id: 0, host: 'mongodb.example.com:27017'}]})
+rs.add("mongodb-replica.example.com:27017")
+rs.addArb("mongodb-ar.example.com")
+
+=============================================================================================================================================================
+
+Docker steps:
+
+###Adding the key
+ #curl -fsSL https://download.docker.com/linux/ubuntu/gpg | sudo apt-key add -
+ #apt-key fingerprint 0EBFCD88
+
+#####Adding the repository
+ #add-apt-repository    "deb [arch=amd64] https://download.docker.com/linux/ubuntu \
+   $(lsb_release -cs) \
+   stable"
+
+#####installing the docker engine
+# apt-get install docker-ce
+
+
+
+###generating the certifiate
+
+#mkdir /certs/
+#openssl req -new -newkey rsa:4096 -days 365 -nodes -x509 -subj "/C=IN/ST=Karnataka/L=Bangalore/O=IT/CN=www.example.com"     -keyout /certs/www.example.com.key  -out /certs/www.example.com.cert
+
+
+####running the docker registry
+#docker run -d \
+  --restart=always \
+  --name registry \
+  -v `pwd`/certs:/certs \
+  -e REGISTRY_HTTP_ADDR=0.0.0.0:443 \
+  -e REGISTRY_HTTP_TLS_CERTIFICATE=/certs/www.example.com.cert \
+  -e REGISTRY_HTTP_TLS_KEY=/certs/www.example.com.key \
+  -p 443:443 \
+  registry:2
+
+
+
+
+
+===========================================================
+Setup small stateless container, listening on an HTTP port 8080
+
+mkdir /docker
+mkdir /docker/data
+
+touch docker-compose.yml Dockerfile app.py
+
+
+#docker-compose up -d
+
+
+
+++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++++
+
+create a file on the below location
+
+#vi /etc/systemd/system/ncat@.service
+
+[Unit]
+Description=ncat listen  %I
+
+[Service]
+Type=oneshot
+ExecStart=/root/ncat.sh %i
+
+[Install]
+WantedBy=multi-user.target
+
+
+#create a script with 
+
+vi /root/ncat.sh
+
+#!/bin/bash
+
+ /bin/nc -l -p  $1 &
+
+
+##change the permission
+#chmod +x /root/ncat.sh
+
+=================================================================================================================
+
+Setup monitoring of content changes to files within /etc directory 
+
+Requirement: A backup of /etc dirctory is already exist on the server in "/bkp" direcotry
+
+#!/bin/bash
+
+path="/etc"
+bkp="/bkp"
+
+
+
+################ listing all the file in /bkp Directory ##########################
+for i in `find $bkp -type f -name \*`
+do
+        echo $i
+        ori_path=$( echo $i | cut -c 5- )
+        ori_file=$path$ori_path
+
+ 	######### Checking if the file is present in the /etc directory ############
+        if [ -f $file ]
+        then
+		#####################Checking the file content ######################
+                diff $i $ori_file >/tmp/out
+                exit_value=$(echo $?)
+                if [ $exit_value -gt 0 ]
+                then
+                         mail -s "$i" root@example.com <<< $(cat /tmp/out)
+                fi
+        else
+                echo " The file do not exist in the /etc directory. Please look into it" | mail -s "$i " root@example.com
+        fi
+done
