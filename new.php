@@ -3,4 +3,5 @@
 <h1> this is the second updarte for k8s </h1>
 <h1> pussing the image without the tag </h1>
 <h1> this is for blue-green deployment </h1>
+<h1> Not depleting the existng deployment </h1>
 </html>
