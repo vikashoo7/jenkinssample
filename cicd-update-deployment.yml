@@ -1,0 +1,26 @@
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: cicd
+  labels:
+    app: cicd
+spec:
+  selector:
+    matchLabels:
+      app: cicd
+  strategy:
+    type: RollingUpdate
+    rollingUpdate:
+      maxSurge: 100%
+      maxUnavailable: 1
+  template:
+    metadata:
+      labels:
+        app: cicd
+    spec:
+      containers:
+      - image: vikashoo7/php
+        name: cicd
+        ports:
+        - containerPort: 80
+          name: cicd
