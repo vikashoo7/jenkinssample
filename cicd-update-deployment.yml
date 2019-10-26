@@ -19,7 +19,7 @@ spec:
         app: cicd
     spec:
       containers:
-      - image: vikashoo7/php:14
+      - image: vikashoo7/php:${BUILD_NUMBER}
         name: cicd
         ports:
         - containerPort: 80
